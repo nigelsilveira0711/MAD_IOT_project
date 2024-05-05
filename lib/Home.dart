@@ -1,14 +1,17 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'Signup.dart';
+import 'package:flutter_libserialport/flutter_libserialport.dart';
+// import 'arduino_communication.dart';
 import 'login.dart';
 import 'Bedroom.dart';
 import 'package:madproject/Lobby.dart';
 import 'Kitchen.dart';
 import 'Dining.dart';
+import 'Lobby.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  const Home({Key? key});
 
   @override
   State<Home> createState() => _Homestate();
@@ -17,13 +20,46 @@ class Home extends StatefulWidget {
 class _Homestate extends State<Home> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // State variables to track the state of the bulb effects
+  final dbR = FirebaseDatabase.instance.ref();
+
   bool bulbEffectEnabled1 = true; // For light bulb 1
   bool bulbEffectEnabled2 = true; // For light bulb 2
   bool bulbEffectEnabled3 = true; // For light bulb 3
   bool bulbEffectEnabled4 = true; // For light bulb 4
   bool bulbEffectEnabled5 = true; // For light bulb 5
-  bool bulbEffectEnabled6 = true; // For light bulb 6
+  bool bulbEffectEnabled6 = true;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _arduinoCommunication.connectToArduino();
+  //   _readDataFromArduino();
+  // }
+
+  // @override
+  // void dispose() {
+  //   _arduinoCommunication.closeSerialPort();
+  //   super.dispose();
+  // }
+
+  // void _readDataFromArduino() {
+  //   _arduinoCommunication.readDataFromArduino((data) {
+  //     // Update the state of your Flutter app based on the received data
+  //     setState(() {
+  //       final sensor1State = data[0];
+  //       final sensor2State = data[1];
+  //       final sensor3State = data[2];
+  //
+  //       // Update the state variables or perform any other necessary actions
+  //       bulbEffectEnabled1 = sensor1State == 0; // Update bulbEffectEnabled1 based on sensor1State
+  //       bulbEffectEnabled2 = sensor2State == 0; // Update bulbEffectEnabled2 based on sensor2State
+  //       bulbEffectEnabled3 = sensor3State == 0;
+  //     });
+  //   });
+  //       }
+
+  // State variables to track the state of the bulb effects
+   // For light bulb 6
 
   // State variable for the toggle switch
   bool _isSwitchOn = false; // Initialize it as true initially
@@ -39,6 +75,12 @@ class _Homestate extends State<Home> {
       bulbEffectEnabled4 = value;
       bulbEffectEnabled5 = value;
       bulbEffectEnabled6 = value;
+
+      // _arduinoCommunication.sendDataToArduino(
+      //   bulbEffectEnabled1 ? 1 : 0,
+      //   bulbEffectEnabled2 ? 1 : 0,
+      //   bulbEffectEnabled3 ? 1 : 0,
+      // );
     });
   }
 
@@ -76,20 +118,16 @@ class _Homestate extends State<Home> {
                   '',
                   style: TextStyle(
                     color: Color(0xFFFB2576).withOpacity(0.6),
-                    fontSize: 20, fontWeight: FontWeight.w400,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
                 Switch(
                   value: _isSwitchOn,
-                  onChanged: (value) {
-                    setState(() {
-                      _isSwitchOn = value;
-                    });
-                  },
+                  onChanged: _toggleSwitch,
                   activeColor: Color(0xFFFB2576),
                   inactiveThumbColor: Color(0xFFFB2576).withOpacity(0.9),
                 ),
-
               ],
             ),
           ),
@@ -110,30 +148,30 @@ class _Homestate extends State<Home> {
           ),
 
           // Light bulb 1 effect
-          Switch(
-            value: _isSwitchOn,
-            onChanged: _toggleSwitch,
-            activeColor: Color(0xFFFB2576),
-            inactiveThumbColor: Color(0xFFFB2576).withOpacity(0.9),
-          ),
-
-              // Light bulb effects
           Positioned(
-            top: 190,
+            top: 240,
             left: 20,
             child: AnimatedOpacity(
               duration: Duration(milliseconds: 500),
               opacity: _isSwitchOn ? 1.0 : 0.0,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    bulbEffectEnabled1 = !bulbEffectEnabled1;
-                  });
+              child: ElevatedButton(
+
+                onPressed: () {
+                  if (_isSwitchOn == true) {
+                    dbR.child("Light").set({"Switch1": !bulbEffectEnabled1});
+                    setState(() {
+                      bulbEffectEnabled1 = !bulbEffectEnabled1;
+                    });
+                  }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.1), // Adjust the opacity as needed
+                ),
                 child: Container(
-                  width: 100,
-                  height: 200,
+                  width: 50,
+                  height: 100,
                   decoration: BoxDecoration(
+
                     shape: BoxShape.circle,
                     gradient: bulbEffectEnabled1
                         ? RadialGradient(
@@ -148,31 +186,30 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
-          // Other widgets can be added on top of the images
-          // Light bulb 2 effect
-          Switch(
-            value: _isSwitchOn,
-            onChanged: _toggleSwitch,
-            activeColor: Color(0xFFFB2576),
-            inactiveThumbColor: Color(0xFFFB2576).withOpacity(0.9),
-          ),
 
-          // Light bulb effects
+          // Light bulb 2 effect
           Positioned(
-            top: 240,
-            left: 260,
+            top: 300,
+            left: 250,
             child: AnimatedOpacity(
               duration: Duration(milliseconds: 500),
               opacity: _isSwitchOn ? 1.0 : 0.0,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    bulbEffectEnabled2 = !bulbEffectEnabled2;
-                  });
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_isSwitchOn == true){
+                    dbR.child("Light").set({"Switch2": !bulbEffectEnabled2});
+                    setState(() {
+                      bulbEffectEnabled2 = !bulbEffectEnabled2;
+                    });
+                  }
+
                 },
+                style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withOpacity(0.1),),
+
                 child: Container(
-                  width: 100,
-                  height: 200,
+                  width: 50,
+                  height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: bulbEffectEnabled2
@@ -188,30 +225,28 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
-          // Light bulb 3 effect
-          Switch(
-            value: _isSwitchOn,
-            onChanged: _toggleSwitch,
-            activeColor: Color(0xFFFB2576),
-            inactiveThumbColor: Color(0xFFFB2576).withOpacity(0.9),
-          ),
 
-          // Light bulb effects
+          // Light bulb 3 effect
           Positioned(
-            top: 350,
+            top: 410,
             left: 40,
             child: AnimatedOpacity(
               duration: Duration(milliseconds: 500),
               opacity: _isSwitchOn ? 1.0 : 0.0,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    bulbEffectEnabled3 = !bulbEffectEnabled3;
-                  });
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_isSwitchOn == true) {
+                    dbR.child("Light").set({"Switch3": !bulbEffectEnabled3});
+                    setState(() {
+                      bulbEffectEnabled3 = !bulbEffectEnabled3;
+                    });
+                  }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.1),),
                 child: Container(
-                  width: 100,
-                  height: 200,
+                  width: 50,
+                  height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: bulbEffectEnabled3
@@ -227,30 +262,28 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
-          // Light bulb 4 effect
-          Switch(
-            value: _isSwitchOn,
-            onChanged: _toggleSwitch,
-            activeColor: Color(0xFFFB2576),
-            inactiveThumbColor: Color(0xFFFB2576).withOpacity(0.9),
-          ),
 
-          // Light bulb effects
+          // Light bulb 4 effect
           Positioned(
-            top: 330,
-            left: 200,
+            top: 400,
+            left: 220,
             child: AnimatedOpacity(
               duration: Duration(milliseconds: 500),
               opacity: _isSwitchOn ? 1.0 : 0.0,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    bulbEffectEnabled4 = !bulbEffectEnabled4;
-                  });
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_isSwitchOn == true) {
+                    dbR.child("Light").set({"Switch4": !bulbEffectEnabled4});
+                    setState(() {
+                      bulbEffectEnabled4 = !bulbEffectEnabled4;
+                    });
+                  }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.1),),
                 child: Container(
-                  width: 100,
-                  height: 200,
+                  width: 50,
+                  height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: bulbEffectEnabled4
@@ -266,30 +299,28 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
-          // Light bulb 5 effect
-          Switch(
-            value: _isSwitchOn,
-            onChanged: _toggleSwitch,
-            activeColor: Color(0xFFFB2576),
-            inactiveThumbColor: Color(0xFFFB2576).withOpacity(0.9),
-          ),
 
-          // Light bulb effects
+          // Light bulb 5 effect
           Positioned(
-            top: 115,
-            left: 120,
+            top: 180,
+            left: 110,
             child: AnimatedOpacity(
               duration: Duration(milliseconds: 500),
               opacity: _isSwitchOn ? 1.0 : 0.0,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    bulbEffectEnabled5 = !bulbEffectEnabled5;
-                  });
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_isSwitchOn == true) {
+                    dbR.child("Light").set({"Switch5": !bulbEffectEnabled5});
+                    setState(() {
+                      bulbEffectEnabled5 = !bulbEffectEnabled5;
+                    });
+                  }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.1),),
                 child: Container(
-                  width: 100,
-                  height: 200,
+                  width: 50,
+                  height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: bulbEffectEnabled5
@@ -305,30 +336,28 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
-          // Light bulb 6 effect
-          Switch(
-            value: _isSwitchOn,
-            onChanged: _toggleSwitch,
-            activeColor: Color(0xFFFB2576),
-            inactiveThumbColor: Color(0xFFFB2576).withOpacity(0.9),
-          ),
 
-          // Light bulb effects
+          // Light bulb 6 effect
           Positioned(
-            top: 115,
-            left: 210,
+            top: 200,
+            left: 220,
             child: AnimatedOpacity(
               duration: Duration(milliseconds: 500),
               opacity: _isSwitchOn ? 1.0 : 0.0,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    bulbEffectEnabled6 = !bulbEffectEnabled6;
-                  });
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_isSwitchOn == true) {
+                    dbR.child("Light").set({"Switch6": !bulbEffectEnabled6});
+                    setState(() {
+                      bulbEffectEnabled6 = !bulbEffectEnabled6;
+                    });
+                  }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.1),),
                 child: Container(
-                  width: 100,
-                  height: 200,
+                  width: 50,
+                  height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: bulbEffectEnabled6
@@ -344,6 +373,7 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
+
           Positioned(
             top: 560,
             left: 20,
@@ -367,16 +397,14 @@ class _Homestate extends State<Home> {
                 },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(05), // Change the shape here
-                  ),
-                  backgroundColor: isHovering1
-                      ? Color(0xFFFB2576).withOpacity(0.8)  // Change the button color when hovered
-                      :  Color(0xFFFB2576).withOpacity(0.2), // Default button color
+                    borderRadius: BorderRadius.circular(5), // Change the shape here
+                  ), backgroundColor: isHovering1
+                      ? Color(0xFFFB2576).withOpacity(0.8) // Change the button color when hovered
+                      : Color(0xFFFB2576).withOpacity(0.2), // Default button color
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                  child:
-                  Icon(
+                  child: Icon(
                     Icons.bed,
                     color: Colors.white70.withOpacity(0.6),
                     size: 40,
@@ -385,6 +413,7 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
+
           Positioned(
             top: 560,
             left: 190,
@@ -408,16 +437,14 @@ class _Homestate extends State<Home> {
                 },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(05), // Change the shape here
-                  ),
-                  backgroundColor: isHovering2
-                      ? Color(0xFFFB2576).withOpacity(0.8)  // Change the button color when hovered
-                      :  Color(0xFFFB2576).withOpacity(0.2), // Default button color
+                    borderRadius: BorderRadius.circular(5), // Change the shape here
+                  ), backgroundColor: isHovering2
+                      ? Color(0xFFFB2576).withOpacity(0.8) // Change the button color when hovered
+                      : Color(0xFFFB2576).withOpacity(0.2), // Default button color
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                  child:
-                  Icon(
+                  child: Icon(
                     Icons.meeting_room,
                     color: Colors.white70.withOpacity(0.6),
                     size: 40,
@@ -426,6 +453,7 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
+
           Positioned(
             top: 660,
             left: 20,
@@ -449,16 +477,14 @@ class _Homestate extends State<Home> {
                 },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(05), // Change the shape here
-                  ),
-                  backgroundColor: isHovering3
-                      ? Color(0xFFFB2576).withOpacity(0.8)  // Change the button color when hovered
-                      :  Color(0xFFFB2576).withOpacity(0.2), // Default button color
+                    borderRadius: BorderRadius.circular(5), // Change the shape here
+                  ), backgroundColor: isHovering3
+                      ? Color(0xFFFB2576).withOpacity(0.8) // Change the button color when hovered
+                      : Color(0xFFFB2576).withOpacity(0.2), // Default button color
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                  child:
-                  Icon(
+                  child: Icon(
                     Icons.kitchen,
                     color: Colors.white70.withOpacity(0.6),
                     size: 40,
@@ -467,6 +493,7 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
+
           Positioned(
             top: 660,
             left: 190,
@@ -490,16 +517,14 @@ class _Homestate extends State<Home> {
                 },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(05), // Change the shape here
-                  ),
-                  backgroundColor: isHovering4
-                      ? Color(0xFFFB2576).withOpacity(0.8)  // Change the button color when hovered
-                      :  Color(0xFFFB2576).withOpacity(0.2), // Default button color
+                    borderRadius: BorderRadius.circular(5), // Change the shape here
+                  ), backgroundColor: isHovering4
+                      ? Color(0xFFFB2576).withOpacity(0.8) // Change the button color when hovered
+                      : Color(0xFFFB2576).withOpacity(0.2), // Default button color
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                  child:
-                  Icon(
+                  child: Icon(
                     Icons.dining,
                     color: Colors.white70.withOpacity(0.6),
                     size: 40,
@@ -508,6 +533,7 @@ class _Homestate extends State<Home> {
               ),
             ),
           ),
+
           Container(
             height: 110,
             decoration: BoxDecoration(
@@ -533,16 +559,18 @@ class _Homestate extends State<Home> {
                     borderRadius: BorderRadius.circular(20), // Change the shape here
                   ),
                 ),
-                backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent), // Make the button transparent
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Colors.transparent), // Make the button transparent
               ),
               child: Padding(
-                padding: EdgeInsets.only(top: 20,left:21,right: 140),
+                padding: EdgeInsets.only(top: 20, left: 21, right: 140),
                 child: Text(
                   'Contol Panel',
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white70.withOpacity(0.6), // Change the text color here
+                    color: Colors.white70.withOpacity(
+                        0.6), // Change the text color here
                   ),
                 ),
               ),
@@ -567,3 +595,12 @@ class _Homestate extends State<Home> {
     );
   }
 }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+
+    );
+  }
+
+
